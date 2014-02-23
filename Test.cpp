@@ -3,6 +3,6 @@
 int main(){
 	Memory mem;
 	cout << "test" << endl;
-	// cout << mem
+	cout << mem.read(1001) << endl;
 	return 0;
 }

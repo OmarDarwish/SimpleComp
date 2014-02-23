@@ -12,21 +12,22 @@
 
 using namespace std;
 const int DEFAULT_MEM_SIZE = 2000;
+const int NO_INSTRUCTION = -1;
 
 class Memory{
 
 public:
 	Memory(string fileName = "pgm.txt"); //memory initialized with contents from this file
 
-	void loadFile(string fileName);
-	void write(int data, int adr);
-	int &read(int addr);
+	void loadFile(string fileName); //load file into memory
+	void write(int data, int adr); //write to mem address
+	int read(int addr); //read memory address
+
 protected:
-	std::vector<int> MemVector; //vector to hold instructions
+	
 
 private:
-	int  & operator [](int i); //set
-
+	std::vector<int> MemVector; //vector to hold instructions
 };
 
 #endif //MEMORY_H

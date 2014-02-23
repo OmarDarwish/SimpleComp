@@ -11,7 +11,7 @@
 using namespace std;
 
 Memory::Memory(string fileName){
-	MemVector = vector<int>(DEFAULT_MEM_SIZE);
+	MemVector = vector<int>(DEFAULT_MEM_SIZE, NO_INSTRUCTION); //init memory with default NO_INSTRUCTION
 	loadFile(fileName);
 }
 
@@ -32,7 +32,6 @@ void Memory::loadFile(string fileName){
 			if(tkn == ".1000")
 				cursor = 1000;
 			else{
-				cout << atoi(tkn.c_str()) << endl;
 				MemVector[cursor] = atoi(tkn.c_str());
 				cursor++;
 			}
@@ -41,3 +40,11 @@ void Memory::loadFile(string fileName){
 	}else
 		cout << "Could not open file " << fileName << endl;
 }
+
+void Memory::write(int data, int adr){
+	MemVector[adr] = data;
+}
+
+ int Memory::read(int adr){
+ 	return MemVector.at(adr);
+ }
