@@ -8,6 +8,7 @@
 
 using namespace std;
 
+const int DISPLAY_OUTPUT_FDS = 4;
 class CPU{
 
 public:
@@ -15,7 +16,7 @@ public:
 	{
 		LOADVAL = 1,				//Load value into AC
 		LOADADDR = 2,				//Load the value at the address into the AC
-		LOADINDADDR = 3,			//Load the value from the address found in the address specified into AC
+		LOADINDADDR = 3,			//Load the value from the address found in the address specified and store in AC
 		LOADIDXXADDR = 4,			//Load the value at (address + X) into the AC
 		LOADIDXYADDR = 5,			//Load the value at (address + Y) into the AC
 		LOADSPX = 6,				//Load from (SP + X) into the AC
@@ -45,10 +46,12 @@ public:
 
 		PUSH = 27,					//Push AC onto the stack
 		POP = 28,					//Pop from stack into AC
-		INTERRUPT = 29,					//Set system mode, switch stack, push SP and PC, set new SP and PC
-		INTERRUPTRET = 30,					//Restore registersm set user mode
+		INTERRUPT = 29,				//Set system mode, switch stack, push SP and PC, set new SP and PC
+		INTERRUPTRET = 30,			//Restore registers and set user mode
 		END = 50					//End Executuion
 	};
+	enum Modes {USER, KERNEL};
+	enum InterruptTypes {TIMER, SYSINT};
 
 	CPU(int threshold = 5);			//default interrupt timer threshold
 	void begin();					//start execution
@@ -79,7 +82,7 @@ protected:
 	void copyFromX();
 	void copyToY();
 	void copyFromY();
-	void copytoSp();
+	void copyToSp();
 	void copyFromSp();
 	void jumpAddr(int addr);
 	void jumpIfEqlAddr(int addr);
@@ -89,15 +92,17 @@ protected:
 	void incX();
 	void push();
 	void pop();
-	void interrupt(); 
+	void interrupt(int type); 
 	void interruptRet(); 
 	void end();
 
 
 private:
 	int PC, SP, IR, AC, X, Y; //registers
-	int InterruptTimerThreshold; //num instructions before interrupt 
+	int kernelSP;
+	int interruptTimerThreshold; //num instructions before interrupt 
 	int lastInt; //num instructions since last interrupt occured.
+	int mode;
 };
 
 #endif //CPU_H
