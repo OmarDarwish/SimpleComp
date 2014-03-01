@@ -61,7 +61,7 @@ protected:
 	int fetch();					//fetches at PC location
 	int fetch(int addr);			//fetches instruction from memory process
 	void write(int addr, int val);	//writes val to memory address
-	void terminate();				//error termination
+	void terminate(int inst);				//error termination
 
 
 	//instruction handlers
@@ -87,7 +87,7 @@ protected:
 	void jumpAddr(int addr);
 	void jumpIfEqlAddr(int addr);
 	void jumpIfNotEqualAddr(int addr);
-	void callAddr();
+	void callAddr(int addr);
 	void ret();
 	void incX();
 	void push();
@@ -99,7 +99,7 @@ protected:
 
 private:
 	int PC, SP, IR, AC, X, Y; //registers
-	int kernelSP;
+	int userSP;
 	int interruptTimerThreshold; //num instructions before interrupt 
 	int lastInt; //num instructions since last interrupt occured.
 	int mode;

@@ -10,15 +10,22 @@ using namespace std;
 CPU::CPU(int threshold){
 	interruptTimerThreshold = threshold;
 	PC = 0;
-	SP = 0;
+	SP = 1000;
 	IR = 0;
 	AC = 0;
 	X = 0;
 	Y = 0;
 	lastInt = 0;
-	kernelSP = 1999;
+	userSP = 1000;
 	mode = USER;
 
+}
+void CPU::begin(){
+	while(PC < 1000){
+		int inst = fetch(PC);
+		execute(inst);
+		PC++;
+	}
 }
 
 int CPU::fetch(){
@@ -42,160 +49,152 @@ void CPU::write(int addr, int val){
 }
 
 void CPU::execute(int inst){
+	int arg;
 	switch(inst){
 		case LOADVAL:
 			PC++;
-			loadVal(inst);
+			arg = fetch(PC);
+			loadVal(arg);
 			break;
 
 		case LOADADDR:
 			PC++;
-			loadAddr(inst);
+			arg = fetch(PC);
+			loadAddr(arg);
 			break;
 
 		case LOADINDADDR:
 			PC++;
-			loadIndAddr(inst);
+			arg = fetch(PC);
+			loadIndAddr(arg);
 			break;
 
 		case LOADIDXXADDR:
 			PC++;
-			loadIdxXaddr(inst);
+			arg = fetch(PC);
+			loadIdxXaddr(arg);
 			break;
 
 		case LOADIDXYADDR:
 			PC++;
-			loadIdxYAddr(inst);
+			arg = fetch(PC);
+			loadIdxYAddr(arg);
 			break;
 
 		case LOADSPX:
-			PC++;
 			loadSpX();
 			break;
 
 		case STOREADDR:
 			PC++;
-			storeAddr(inst);
+			arg = fetch(PC);
+			storeAddr(arg);
 			break;
 
 		case GETRAND:
-			PC++;
 			getRand();
 			break;
 
 		case PUTPORT:
 			PC++;
-			putPort(inst);
+			arg = fetch(PC);
+			putPort(arg);
 			break;
 
 		case ADDX:
-			PC++;
 			addX();
 			break;
 
 		case ADDY:
-			PC++;
 			addY();
 			break;
 
 		case SUBX:
-			PC++;
 			subX();
 			break;
 
 		case SUBY:
-			PC++;
 			subY();
 			break;
 
 		case COPYTOX:
-			PC++;
 			copyToX();
 			break;
 
 		case COPYFROMX:
-			PC++;
 			copyFromX();
 			break;
 
 		case COPYTOY:
-			PC++;
 			copyToY();
 			break;
 
 		case COPYFROMY:
-			PC++;
 			copyFromY();
 			break;
 
 		case COPYTOSP:
-			PC++;
 			copyToSp();
 			break;
 
 		case COPYFROMSP:
-			PC++;
 			copyFromSp();
 			break;
 
 		
 		case CALLADDR:
 			PC++;
-			callAddr();
+			arg = fetch(PC);
+			callAddr(arg);
 			break;
 
 		case RET:
-			PC++;
 			ret();
 			break;
 
 		case INCX:
-			PC++;
 			incX();
 			break;
 
 		case PUSH:
-			PC++;
 			push();
 			break;
 
 		case POP:
-			PC++;
 			pop();
 			break;
 
 		case INTERRUPT:			
-			PC++;
 			interrupt(SYSINT);
 			break;
 
 		case INTERRUPTRET:		
-			PC++;
 			interruptRet();
 			break;
 
 		case END:		
-			PC++;
 			end();
 			break;
 
 		case JUMPADDR:			
-			PC++;
-			jumpAddr(inst);
+			arg = fetch(PC);
+			jumpAddr(arg);
 			break;
 
 		case JUMPIFEQLADDR:		
 			PC++;
-			jumpIfEqlAddr(inst);
+			arg = fetch(PC);
+			jumpIfEqlAddr(arg);
 			break;
 
 		case JUMPIFNOTEQUALADDR:		
 			PC++;
-			jumpIfNotEqualAddr(inst);
+			arg = fetch(PC);
+			jumpIfNotEqualAddr(arg);
 			break;
 
 		default:
-			terminate();
+			terminate(inst);
 			break;
 	}
 }
@@ -302,14 +301,15 @@ void CPU::jumpIfNotEqualAddr(int addr){
 	if(AC != 0) PC = addr;
 }
 
-void CPU::callAddr(){
+void CPU::callAddr(int addr){
+	SP--;
 	write(SP, PC); //save PC to stack;
-	SP--; 
+	jumpAddr(addr);
 }
 
-void CPU::ret(){
-	 SP++;
-	 jumpAddr(fetch(SP));
+void CPU::ret(){	
+	jumpAddr(fetch(SP));
+	SP++;
 }
 
 void CPU::incX(){
@@ -317,13 +317,13 @@ void CPU::incX(){
 }
 
 void CPU::push(){
-	write(SP, AC);
 	SP--;
+	write(SP, AC);
 }
 
 void CPU::pop(){
-	SP++;
 	AC = fetch(SP);
+	SP++;
 }
 
 void CPU::interrupt(int type){
@@ -333,7 +333,7 @@ void CPU::interrupt(int type){
 	SP = 1999;
 	write(SP, userSP); //push user SP
 	SP--;
-	write(SP, PC); //push
+	write(SP, PC); //push PC
 
 	if(type = TIMER)
 		PC = 1000;
@@ -342,8 +342,7 @@ void CPU::interrupt(int type){
 } 
 
 void CPU::interruptRet(){
-	SP++;
-	PC = fetch(PC);
+	PC = fetch(SP);
 	SP++;
 	SP = fetch(SP);
 
@@ -351,9 +350,10 @@ void CPU::interruptRet(){
 } 
 
 void CPU::end(){
-
+	//end executuion by going to end of memory
+	PC = 1000;
 }
 
-void CPU::terminate(){
-
+void CPU::terminate(int inst){
+	dprintf(DISPLAY_OUTPUT_FDS, "Fatal error, unsupported inst: %d", inst);
 }
